@@ -3,7 +3,7 @@ import groovy.json.JsonSlurperClassic
 node {
 	def BUILD_NUMBER=env.BUILD_NUMBER
     def RUN_ARTIFACT_DIR="tests/${BUILD_NUMBER}"
-	def RUN_ARTIFACT_DIR="tests\\%BUILD_NUMBER%""
+	def RUN_ARTIFACT_DIR="tests\\%BUILD_NUMBER%"
     //def SFDC_USERNAME="test-whnmqw0e9his@example.com"
 	def SFDC_USERNAME
 	def SFDC_TESTRUNID
