@@ -5,7 +5,7 @@ node {
     //def RUN_ARTIFACT_DIR="tests/${BUILD_NUMBER}"
 	def RUN_ARTIFACT_DIR="tests\\%BUILD_NUMBER%"
     //def SFDC_USERNAME="test-whnmqw0e9his@example.com"
-	def SFDC_USERNAME
+	def SFDC_USERNAME="test-8amshvruokvl@example.com"
 	def SFDC_TESTRUNID
 	
 	def HUB_ORG=env.HUB_ORG_DH
@@ -31,29 +31,29 @@ node {
 			}
 			if (rc != 0) { error 'hub org authorization failed' }
 		}
-		stage('Create Scratch Org'){
+		//stage('Create Scratch Org'){
 			 // need to pull out assigned username
-            if (isUnix()) {
-                rmsg = sh returnStdout: true, script: "${toolbelt} force:org:create --definitionfile config/enterprise-scratch-def.json --json --setdefaultusername"
-            }else{
-                rmsg = bat returnStdout: true, script: "\"${toolbelt}\" force:org:create --definitionfile config/project-scratch-def.json --json --setdefaultusername"
-            }
-            printf rmsg
-            println('Hello from a Job DSL script1!')
-            println(rmsg)
-            def beginIndex = rmsg.indexOf('{')
-            def endIndex = rmsg.indexOf('}')
-            println(beginIndex)
-            println(endIndex)
-            def jsobSubstring = rmsg.substring(beginIndex)
-            println(jsobSubstring)
+        //    if (isUnix()) {
+          //      rmsg = sh returnStdout: true, script: "${toolbelt} force:org:create --definitionfile config/enterprise-scratch-def.json --json --setdefaultusername"
+           // }else{
+           //     rmsg = bat returnStdout: true, script: "\"${toolbelt}\" force:org:create --definitionfile config/project-scratch-def.json --json --setdefaultusername"
+           // }
+           // printf rmsg
+           // println('Hello from a Job DSL script1!')
+           // println(rmsg)
+           // def beginIndex = rmsg.indexOf('{')
+           // def endIndex = rmsg.indexOf('}')
+           // println(beginIndex)
+           // println(endIndex)
+           // def jsobSubstring = rmsg.substring(beginIndex)
+           // println(jsobSubstring)
             
-            def jsonSlurper = new JsonSlurperClassic()
-            def robj = jsonSlurper.parseText(jsobSubstring)
-            if (robj.status != 0) { error 'org creation failed: ' + robj.message }
-            SFDC_USERNAME=robj.result.username
-            robj = null
-		}
+           // def jsonSlurper = new JsonSlurperClassic()
+           // def robj = jsonSlurper.parseText(jsobSubstring)
+           // if (robj.status != 0) { error 'org creation failed: ' + robj.message }
+           // SFDC_USERNAME=robj.result.username
+           // robj = null
+		//}
 		stage('Push To Test Org') {
             if (isUnix()) {
                 rc = sh returnStatus: true, script: "${toolbelt} force:source:push --json --targetusername ${SFDC_USERNAME}"
@@ -119,58 +119,60 @@ node {
             def jsonSlurper = new JsonSlurperClassic()
             def robj = jsonSlurper.parseText(jsobSubstring)
             if (robj.status != 0) { error 'Data import failed: ' + robj.message }
-            SFDC_TESTRUNID = robj.result.summary.testRunId
+            //SFDC_TESTRUNID = robj.result.summary.testRunId
 			robj = null
 		}
-		stage ('Run Apex Tests') {
+stage ('Run Apex Tests') {
 			if (isUnix()){
 				sh "mkdir -p ${RUN_ARTIFACT_DIR}"
-				timeout(time: 120, unit: 'SECONDS')
+				timeout(time: 120, unit: 'SECONDS') {
                 rc = sh returnStatus: true, script: "${toolbelt}/sfdx force:apex:test:run --testlevel RunLocalTests --outputdir ${RUN_ARTIFACT_DIR} --resultformat tap --targetusername ${SFDC_USERNAME}"
+				}
 			}else{
 				bat "mkdir ${RUN_ARTIFACT_DIR}"
-				timeout(time: 120, unit: 'SECONDS')
+				timeout(time: 120, unit: 'SECONDS') {
 				//rc = bat returnStatus: true, script: "\"${toolbelt}\" force:apex:test:run --testlevel RunLocalTests --outputdir ${RUN_ARTIFACT_DIR} --resultformat tap --targetusername ${SFDC_USERNAME}"
 				rmsg = bat returnStdout: true, script: "\"${toolbelt}\" force:apex:test:run --testlevel RunLocalTests --outputdir ${RUN_ARTIFACT_DIR} --resultformat tap --json --targetusername ${SFDC_USERNAME}"
+				}
 			}
-			printf rmsg
-            println('Hello from a Job DSL script4!')
+			println('Hello from a Job DSL script4!')
             println(rmsg)
             def beginIndex = rmsg.indexOf('{')
+	    println(beginIndex)
             def endIndex = rmsg.indexOf('}')
-            println(beginIndex)
             println(endIndex)
             def jsobSubstring = rmsg.substring(beginIndex)
             println(jsobSubstring)
-            
-            def jsonSlurper = new JsonSlurperClassic()
+	def jsonSlurper = new JsonSlurperClassic()
             def robj = jsonSlurper.parseText(jsobSubstring)
-            if (robj.status != 0) { error 'Apex test run failed: ' + robj.message }
-            SFDC_TESTRUNID = robj.result.summary.testRunId
-			robj = null
+	if (robj.status != 0) { error 'Apex test run failed: ' + robj.message }
+	            SFDC_TESTRUNID = robj.result.summary.testRunId
+			println(robj.result.summary.testRunId)
+			println SFDC_TESTRUNID
+			robj=null
+			
 		}
-		stage ('Apex Test Report') {
+	stage ('Apex Test Report') {
 		if (isUnix()){
-				//rc = sh returnStatus: true, script: "${toolbelt}/sfdx force:apex:test:report -i {SFDC_TESTRUNID} --resultformat human --json
+				//rc = sh returnStatus: true, script: "${toolbelt}/sfdx force:apex:test:report -i ${SFDC_TESTRUNID} --resultformat human --json
 			}else{
 				//rc = bat returnStatus: true, script: "\"${toolbelt}\" force:apex:test:report -i ${SFDC_TESTRUNID} --resultformat human --json"
 				rmsg = bat returnStdout: true, script: "\"${toolbelt}\" force:apex:test:report -i ${SFDC_TESTRUNID} --resultformat human --json"
 			}
-			printf rmsg
-            println('Hello from a Job DSL script!')
+	println('Hello from a Job DSL script5!')
             println(rmsg)
             def beginIndex = rmsg.indexOf('{')
+	    println(beginIndex)
             def endIndex = rmsg.indexOf('}')
-            println(beginIndex)
             println(endIndex)
-            def jsobSubstring = rmsg.substring(beginIndex)
+		def jsobSubstring = rmsg.substring(beginIndex)
             println(jsobSubstring)
-            
-            def jsonSlurper = new JsonSlurperClassic()
+	def jsonSlurper = new JsonSlurperClassic()
             def robj = jsonSlurper.parseText(jsobSubstring)
-            if (robj.status != 0) { error 'Apex test report failed: ' + robj.message }
-			robj = null
-		}
+		if (robj.status != 0) { error 'Apex test run failed: ' + robj.message }
+	            robj=null
+	}
+		
 		stage('collect results') {
             junit keepLongStdio: true, testResults: 'tests/**/*-junit.xml'
         }
