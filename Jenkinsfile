@@ -5,7 +5,7 @@ node {
     //def RUN_ARTIFACT_DIR="tests/${BUILD_NUMBER}"
 	def RUN_ARTIFACT_DIR="tests\\%BUILD_NUMBER%"
     //def SFDC_USERNAME="test-whnmqw0e9his@example.com"
-	def SFDC_USERNAME="test-8amshvruokvl@example.com"
+	def SFDC_USERNAME
 	def SFDC_TESTRUNID
 	
 	def HUB_ORG=env.HUB_ORG_DH
@@ -31,29 +31,29 @@ node {
 			}
 			if (rc != 0) { error 'hub org authorization failed' }
 		}
-		//stage('Create Scratch Org'){
+		stage('Create Scratch Org'){
 			 // need to pull out assigned username
-        //    if (isUnix()) {
-          //      rmsg = sh returnStdout: true, script: "${toolbelt} force:org:create --definitionfile config/enterprise-scratch-def.json --json --setdefaultusername"
-           // }else{
-           //     rmsg = bat returnStdout: true, script: "\"${toolbelt}\" force:org:create --definitionfile config/project-scratch-def.json --json --setdefaultusername"
-           // }
-           // printf rmsg
-           // println('Hello from a Job DSL script1!')
-           // println(rmsg)
-           // def beginIndex = rmsg.indexOf('{')
-           // def endIndex = rmsg.indexOf('}')
-           // println(beginIndex)
-           // println(endIndex)
-           // def jsobSubstring = rmsg.substring(beginIndex)
-           // println(jsobSubstring)
+            if (isUnix()) {
+                rmsg = sh returnStdout: true, script: "${toolbelt} force:org:create --definitionfile config/enterprise-scratch-def.json --json --setdefaultusername"
+            }else{
+                rmsg = bat returnStdout: true, script: "\"${toolbelt}\" force:org:create --definitionfile config/project-scratch-def.json --json --setdefaultusername"
+            }
+            printf rmsg
+            println('Hello from a Job DSL script1!')
+            println(rmsg)
+            def beginIndex = rmsg.indexOf('{')
+            def endIndex = rmsg.indexOf('}')
+            println(beginIndex)
+            println(endIndex)
+            def jsobSubstring = rmsg.substring(beginIndex)
+            println(jsobSubstring)
             
-           // def jsonSlurper = new JsonSlurperClassic()
-           // def robj = jsonSlurper.parseText(jsobSubstring)
-           // if (robj.status != 0) { error 'org creation failed: ' + robj.message }
-           // SFDC_USERNAME=robj.result.username
-           // robj = null
-		//}
+            def jsonSlurper = new JsonSlurperClassic()
+            def robj = jsonSlurper.parseText(jsobSubstring)
+            if (robj.status != 0) { error 'org creation failed: ' + robj.message }
+            SFDC_USERNAME=robj.result.username
+            robj = null
+		}
 		stage('Push To Test Org') {
             if (isUnix()) {
                 rc = sh returnStatus: true, script: "${toolbelt} force:source:push --json --targetusername ${SFDC_USERNAME}"
