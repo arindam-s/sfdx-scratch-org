@@ -82,7 +82,7 @@ node {
 				rc = sh returnStatus: true, script: "${toolbelt}/sfdx force:user:permset:assign --targetusername ${SFDC_USERNAME} --permsetname DreamHouse"
 			}else{
 				//rc = bat returnStatus: true, script: "\"${toolbelt}\" force:user:permset:assign --targetusername ${SFDC_USERNAME} --permsetname DreamHouse"
-				rmsg = bat returnStdout: true, script: "\"${toolbelt}\" force:user:permset:assign --json --targetusername ${SFDC_USERNAME} --permsetname DreamHouse"
+				rmsg = bat returnStdout: true, script: "\"${toolbelt}\" force:user:permset:assign --json --targetusername ${SFDC_USERNAME} --permsetname dreamHouse"
 			}
 			printf rmsg
             println('Hello from a Job DSL script3!')
